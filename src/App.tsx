@@ -4,6 +4,7 @@ import * as knnClassifier from '@tensorflow-models/knn-classifier';
 import * as tf from '@tensorflow/tfjs';
 import Navbar from 'react-bootstrap/Navbar';
 import Nav from 'react-bootstrap/Nav';
+import {isMobile} from 'react-device-detect';
 import SquirtleData from './data/squirtle/squirtle';
 import CharmanderData from './data/charmander/charmander';
 import BulbasaurData from './data/bulbasaur/bulbasaur';
@@ -60,12 +61,12 @@ class App extends Component<Props, State> {
       scanned: false,
       classifier: null
     }
-    let arr = [Object.values(BulbasaurData), Object.values(CharmanderData), Object.values(SquirtleData)].flat()
+    let arr = isMobile ? [Object.values(BulbasaurData).filter((i, index) => {if(index < 20) return i;}), Object.values(CharmanderData).filter((i, index) => {if(index < 20) return i;}), Object.values(SquirtleData).filter((i, index) => {if(index < 20) return i;})].flat() : [Object.values(BulbasaurData), Object.values(CharmanderData), Object.values(SquirtleData)].flat()
     for (let i = 0; i < arr.length; i++) {
       const im = new Image()
-      im.src = arr[i];
-      im.width = 50;
-      im.height = 50;
+      im.src = arr[i]!;
+      im.width = 180;
+      im.height = 180;
       im.className = "hidden";
       document.body.appendChild(im);
       im.id = "img" + (i + 1).toString()
@@ -75,13 +76,13 @@ class App extends Component<Props, State> {
   async componentDidMount() {
     const modelMobilenet = await mobilenet.load({ version: 2, alpha: 1 });
     const classifier = knnClassifier.create();
-    let arr = [Object.values(BulbasaurData), Object.values(CharmanderData), Object.values(SquirtleData)].flat()
+    let arr = isMobile ? [Object.values(BulbasaurData).filter((i, index) => {if(index < 20) return i;}), Object.values(CharmanderData).filter((i, index) => {if(index < 20) return i;}), Object.values(SquirtleData).filter((i, index) => {if(index < 20) return i;})].flat() : [Object.values(BulbasaurData), Object.values(CharmanderData), Object.values(SquirtleData)].flat()
     for (let i = 0; i < arr.length; i++) {
       let image = tf.browser.fromPixels(document.getElementById("img" + (i + 1).toString()) as HTMLImageElement);
       const inferred = modelMobilenet.infer(image);
-      if (i < 100)
+      if (i <= (isMobile ? 19 : 100))
         classifier.addExample(inferred, 'Balbasaur');
-      else if (i >= 100 && i < 199)
+      else if ((i > (isMobile ? 19 : 100) && i <= (isMobile ? 38 : 200)))
         classifier.addExample(inferred, 'Charmander');
       else
         classifier.addExample(inferred, 'Squirtle');
@@ -131,16 +132,17 @@ class App extends Component<Props, State> {
               this.state.image === '' ?
                 <div className="container justify-center align-items-center">
                   <div className="text-center">
-                    <p className="lead">Upload your Pokemon image to classify it. Images are clasified with Tensorflow.js and MobileNet using transfer learning. Currently only Bulbasaur, Charmander, and Squirtle are classified.</p>
+                    <p className="lead" style={{fontSize: '1.1rem'}}>Upload your Pokemon image to classify it. Images are clasified with Tensorflow.js and MobileNet using transfer learning. Currently only Bulbasaur, Charmander, and Squirtle are classified. </p>
                   </div>
-                  <form className="w-75 form">
+                  <form className={isMobile ? "form m-2" : "w-75 form"}>
+                    { isMobile ? <p className="text-muted text-center">For better performance, view on a desktop.</p> : <div></div> }
                     <div className="input-group">
                       <div className="input-group-prepend">
                         <span className="input-group-text">Upload</span>
                       </div>
                       <div className="custom-file">
                         <input value={this.state.image} onChange={this.onChange} accept="image/*" type="file" className="custom-file-input" />
-                        <label className="custom-file-label">Choose file</label>
+                        <label className="custom-file-label">Choose image</label>
                       </div>
                     </div>
                   </form>
@@ -162,16 +164,13 @@ class App extends Component<Props, State> {
                             const predmobilenet = await modelMobilenet!.classify(this.refs.image as HTMLImageElement);
                             const activation = modelMobilenet!.infer(this.refs.image as HTMLImageElement);
                             const predclass = await classifier!.predictClass(activation);
-                            console.log(predmobilenet);
-                            console.log(predclass);
                             this.setState({ mobilenetPred: predmobilenet, knnPred: predclass, scanned: true });
 
                           }}>Classify</button>
                         </div>
                         :
                         <div className="container">
-                          <ul className="list-group">
-                            <li className="list-group-item disabled">MobileNet</li>
+                          <ul className="list-group mb-4">
                             <li className="list-group-item disabled">KNN</li>
                             <li className="list-group-item">Prediction: Balbasaur - Probability: {this.state.knnPred!.confidences.Balbasaur}</li>
                             <li className="list-group-item">Prediction: Charmander - Probability: {this.state.knnPred!.confidences.Charmander}</li>

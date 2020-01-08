@@ -17,6 +17,7 @@
     "gh-pages": "^2.2.0",
     "react": "^16.12.0",
     "react-bootstrap": "^1.0.0-beta.16",
+    "react-device-detect": "^1.11.14",
     "react-dom": "^16.12.0",
     "react-scripts": "3.3.0",
     "typescript": "~3.7.2"
@@ -32,6 +33,7 @@
   "eslintConfig": {
     "extends": "react-app"
   },
+  "homepage": ".",
   "browserslist": {
     "production": [
       ">0.2%",
