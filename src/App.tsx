@@ -4,11 +4,15 @@ import * as knnClassifier from '@tensorflow-models/knn-classifier';
 import * as tf from '@tensorflow/tfjs';
 import Navbar from 'react-bootstrap/Navbar';
 import Nav from 'react-bootstrap/Nav';
-/* import SquirtleData from './data/squirtle/squirtle';
+import SquirtleData from './data/squirtle/squirtle';
 import CharmanderData from './data/charmander/charmander';
-import BulbasaurData from './data/bulbasaur/bulbasaur'; */
+import BulbasaurData from './data/bulbasaur/bulbasaur';
 import model from './model.json';
 import './App.css';
+
+
+//Set true for training the model
+const TRAIN = false;
 
 /**
  * A simple React App to for classifying Pokemons
@@ -76,7 +80,8 @@ class App extends Component<Props, State> {
       scanned: false,
       classifier: null
     }
-    // this.trainData(BulbasaurData, CharmanderData, SquirtleData);
+    if (TRAIN)
+      this.trainData(BulbasaurData, CharmanderData, SquirtleData);
   }
 
   /**
@@ -92,8 +97,8 @@ class App extends Component<Props, State> {
     for (let i = 0; i < arr.length; i++) {
       const im = new Image()
       im.src = arr[i] as string;
-      im.width = 300;
-      im.height = 300;
+      im.width = 500;
+      im.height = 500;
       im.className = "hidden";
       document.body.appendChild(im);
       im.id = "img" + (i + 1).toString()
@@ -117,26 +122,28 @@ class App extends Component<Props, State> {
     for (let i = 0; i < arr.length; i++) {
       let image = tf.browser.fromPixels(document.getElementById("img" + (i + 1).toString()) as HTMLImageElement);
       const inferred = modelMobilenet.infer(image);
-      if (i <= 100)
+      if (i <= 200)
         classifier.addExample(inferred, 0);
-      else if (i > 100 && i <= 200)
+      else if (i > 200 && i <= 400)
         classifier.addExample(inferred, 1);
       else
         classifier.addExample(inferred, 2);
     }
-    this.saveClassifier(classifier);
     this.setState({ modelMobilenet, classifier, loading: false }, () => console.log(this.state.classifier?.getNumClasses()));
   }
 
 
 
   async componentDidMount() {
-    /*  await this.trainModel(BulbasaurData, CharmanderData, SquirtleData);
-     this.saveClassifier(this.state.classifier!); */  
-    const modelMobilenet = await mobilenet.load();
-    const classifier = this.loadClassifier()
-    console.log(classifier.getNumClasses());
-    this.setState({ classifier, modelMobilenet, loading: false });
+    if (TRAIN) {
+      await this.trainModel(BulbasaurData, CharmanderData, SquirtleData);
+      this.saveClassifier(this.state.classifier!);
+    }
+    else {
+      const modelMobilenet = await mobilenet.load();
+      const classifier = this.loadClassifier()
+      this.setState({ classifier, modelMobilenet, loading: false });
+    }
   }
 
   /**
@@ -285,7 +292,7 @@ class App extends Component<Props, State> {
                   </form>
                 </div>
                 :
-                <div className="container-fluid">
+                <div className="container-fluid mb-2">
                   <div className="row">
                     <div className="col-lg-12">
                       <div className="text-center">
@@ -295,18 +302,22 @@ class App extends Component<Props, State> {
                       {!this.state.scanned ?
                         <div className="text-center">
                           <button className="btn btn-outline-primary" onClick={async () => {
-                            const modelMobilenet = this.state.modelMobilenet;
-                            const classifier = this.state.classifier;
-                            const predmobilenet = await modelMobilenet!.classify(this.refs.image as HTMLImageElement);
-                            const activation = modelMobilenet!.infer(this.refs.image as HTMLImageElement);
-                            const predclass = await classifier!.predictClass(activation);
-                            console.log(predclass);
-                            this.setState({ mobilenetPred: predmobilenet, knnPred: predclass, scanned: true });
-
+                            if (TRAIN) {
+                              this.trainPred();
+                            }
+                            else {
+                              const modelMobilenet = this.state.modelMobilenet;
+                              const classifier = this.state.classifier;
+                              const predmobilenet = await modelMobilenet!.classify(this.refs.image as HTMLImageElement);
+                              const activation = modelMobilenet!.infer(this.refs.image as HTMLImageElement);
+                              const predclass = await classifier!.predictClass(activation);
+                              console.log(predclass);
+                              this.setState({ mobilenetPred: predmobilenet, knnPred: predclass, scanned: true });
+                            }
                           }}>Classify</button>
                         </div>
                         :
-                        <div className="container">
+                        <div className="container mb-2">
                           <ul className="list-group mb-4">
                             <li className="list-group-item disabled">KNN Predictions</li>
                             <li className="list-group-item">Bulbasaur - Probability: {(this.state.knnPred!.confidences["0"] * 100).toFixed(2)}%</li>

@@ -5,7 +5,7 @@
 
 > Pokemon Classification is a React App that uses Tenserflow.js and The MobileNet Model. It uses transfer learning to classify Pokemons. Currently only 3 pokemons are classified. These are Bulbasaur, Charmander, and Squirtle.
 
-### 🏠 [Homepage](https://iberatkaya.github.io/imageclassification/)
+### 🏠 [Homepage](https://iberatkaya.github.io/pokemonclassification/)
 
 ## Install
 
