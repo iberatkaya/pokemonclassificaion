@@ -3,10 +3,10 @@ import * as mobilenet from '@tensorflow-models/mobilenet';
 import * as knnClassifier from '@tensorflow-models/knn-classifier';
 import * as tf from '@tensorflow/tfjs';
 import Navbar from 'react-bootstrap/Navbar';
-import Nav from 'react-bootstrap/Nav';
+import Nav from 'react-bootstrap/Nav';/* 
 import SquirtleData from './data/squirtle/squirtle';
 import CharmanderData from './data/charmander/charmander';
-import BulbasaurData from './data/bulbasaur/bulbasaur';
+import BulbasaurData from './data/bulbasaur/bulbasaur';  */
 import model from './model.json';
 import './App.css';
 
@@ -79,9 +79,9 @@ class App extends Component<Props, State> {
       mobilenetPred: [],
       scanned: false,
       classifier: null
-    }
+    }/* 
     if (TRAIN)
-      this.trainData(BulbasaurData, CharmanderData, SquirtleData);
+      this.trainData(BulbasaurData, CharmanderData, SquirtleData); */
   }
 
   /**
@@ -93,13 +93,15 @@ class App extends Component<Props, State> {
    */
 
   trainData = (BulbasaurData: any, CharmanderData: any, SquirtleData: any) => {
-    let arr = [Object.values(BulbasaurData), Object.values(CharmanderData), Object.values(SquirtleData)].flat()
+    let arr = [Object.values(BulbasaurData), Object.values(CharmanderData), Object.values(SquirtleData)].flat() as any;
+    this.shuffle(arr);
     for (let i = 0; i < arr.length; i++) {
       const im = new Image()
-      im.src = arr[i] as string;
+      im.src = arr[i].img as string;
       im.width = 500;
       im.height = 500;
       im.className = "hidden";
+      im.alt = arr[i].type;
       document.body.appendChild(im);
       im.id = "img" + (i + 1).toString()
     }
@@ -118,32 +120,46 @@ class App extends Component<Props, State> {
   trainModel = async (BulbasaurData: any, CharmanderData: any, SquirtleData: any) => {
     const modelMobilenet = await mobilenet.load({ version: 2, alpha: 1 });
     const classifier = knnClassifier.create();
-    let arr = [Object.values(BulbasaurData), Object.values(CharmanderData), Object.values(SquirtleData)].flat()
+    let arr = [Object.values(BulbasaurData), Object.values(CharmanderData), Object.values(SquirtleData)].flat() as Array<any>;
     for (let i = 0; i < arr.length; i++) {
       let image = tf.browser.fromPixels(document.getElementById("img" + (i + 1).toString()) as HTMLImageElement);
       const inferred = modelMobilenet.infer(image);
-      if (i <= 200)
+    //  console.log((document.getElementById("img" + (i + 1).toString()!) as HTMLImageElement).alt);
+      if ((document.getElementById("img" + (i + 1).toString()!) as HTMLImageElement).alt === "bulbasaur")
         classifier.addExample(inferred, 0);
-      else if (i > 200 && i <= 400)
+      else if ((document.getElementById("img" + (i + 1).toString()!) as HTMLImageElement).alt === "charmander")
         classifier.addExample(inferred, 1);
       else
         classifier.addExample(inferred, 2);
+      tf.dispose(image);
+      tf.dispose(inferred);
     }
     this.setState({ modelMobilenet, classifier, loading: false }, () => console.log(this.state.classifier?.getNumClasses()));
   }
 
+  shuffle = (array: Array<any>) => {
+    let currentIndex = array.length;
+    let temporaryValue, randomIndex;
+    while (0 !== currentIndex) {
+      randomIndex = Math.floor(Math.random() * currentIndex);
+      currentIndex -= 1;
+      temporaryValue = array[currentIndex];
+      array[currentIndex] = array[randomIndex];
+      array[randomIndex] = temporaryValue;
+    }
+  };
 
 
   async componentDidMount() {
-    if (TRAIN) {
+   /*  if (TRAIN) {
       await this.trainModel(BulbasaurData, CharmanderData, SquirtleData);
       this.saveClassifier(this.state.classifier!);
     }
-    else {
+    else {  */
       const modelMobilenet = await mobilenet.load();
       const classifier = this.loadClassifier()
       this.setState({ classifier, modelMobilenet, loading: false });
-    }
+    /*  }  */
   }
 
   /**
@@ -168,7 +184,6 @@ class App extends Component<Props, State> {
 
   loadClassifier = (): knnClassifier.KNNClassifier => {
     const classifier: knnClassifier.KNNClassifier = new knnClassifier.KNNClassifier();
-    console.log(model);
     // @ts-ignore
     const dataset = this.fromDatasetObject(model);
     classifier.setClassifierDataset(dataset);
@@ -279,7 +294,7 @@ class App extends Component<Props, State> {
                   <div className="text-center">
                     <p className="lead" style={{ fontSize: '1.1rem' }}>Upload your Pokemon image to classify it. Images are clasified with Tensorflow.js and MobileNet using transfer learning. Currently only Bulbasaur, Charmander, and Squirtle are classified. </p>
                   </div>
-                  <form className={"w-75 form"}>
+                  <form className={"form"}>
                     <div className="input-group">
                       <div className="input-group-prepend">
                         <span className="input-group-text">Upload</span>
@@ -292,7 +307,7 @@ class App extends Component<Props, State> {
                   </form>
                 </div>
                 :
-                <div className="container-fluid mb-2">
+                <div className="container-fluid">
                   <div className="row">
                     <div className="col-lg-12">
                       <div className="text-center">
@@ -300,7 +315,7 @@ class App extends Component<Props, State> {
                       </div>
                       <p></p> {/* Moves button to bottom of image */}
                       {!this.state.scanned ?
-                        <div className="text-center">
+                        <div className="text-center mb-2">
                           <button className="btn btn-outline-primary" onClick={async () => {
                             if (TRAIN) {
                               this.trainPred();

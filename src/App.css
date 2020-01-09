@@ -2,5 +2,6 @@
 .hidden { display:none; }
 
 .form{
-  margin: 0 auto !important;
+  margin-left: 1rem;
+  margin-right: 1rem;
 }
