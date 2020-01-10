@@ -261,7 +261,7 @@ class App extends Component<Props, State> {
     return (
       <div>
         <Navbar bg="success" variant="dark" expand="lg">
-          <Navbar.Brand style={{ color: '#eee' }} href="#home">Pokemon Classification</Navbar.Brand>
+          <Navbar.Brand style={{ color: '#eee' }} href="#home">Pokemon Classification TL</Navbar.Brand>
           <Navbar.Toggle aria-controls="basic-navbar-nav" />
           <Navbar.Collapse id="basic-navbar-nav">
             <Nav className="ml-auto">
@@ -275,7 +275,7 @@ class App extends Component<Props, State> {
         <div className="container">
           <div className="row">
             <div className="col-lg-12 text-center">
-              <h2 className="m-3">Pokemon Classification</h2>
+              <h2 className="m-3">Pokemon Classification TL</h2>
             </div>
           </div>
         </div>
