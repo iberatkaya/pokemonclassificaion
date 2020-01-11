@@ -238,9 +238,19 @@ class App extends Component<Props, State> {
     link.click();
   }
 
+  getBase64 = (file: File): Promise<string> => {
+    return new Promise(function (resolve, reject) {
+      var reader = new FileReader();
+      reader.onload = function () { resolve(reader.result as string); };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
   onChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    let file = URL.createObjectURL(e.target.files![0]);
-    this.setState({ image: file })
+    const file = e.target.files![0];
+    const base64 = await this.getBase64(file!);
+    this.setState({ image: base64 })
   }
 
   /**
